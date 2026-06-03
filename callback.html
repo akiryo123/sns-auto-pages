@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OAuth Callback — SNS_auto</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 20px; line-height: 1.6; color: #222; }
+  h1 { font-size: 1.4rem; }
+  .box { background: #f5f5f7; border: 1px solid #ddd; border-radius: 8px; padding: 14px; margin: 14px 0; word-break: break-all; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .95rem; }
+  .label { font-weight: 600; color: #555; font-size: .85rem; display: block; margin-bottom: 4px; }
+  button { background: #c4304a; color: #fff; border: none; border-radius: 6px; padding: 8px 14px; font-size: .9rem; cursor: pointer; }
+  .ok { color: #1a7f37; } .err { color: #c4304a; }
+  .hint { color: #888; font-size: .85rem; margin-top: 24px; }
+</style>
+</head>
+<body>
+  <h1>SNS_auto — OAuth Callback</h1>
+  <p id="status">Reading authorization response…</p>
+
+  <div id="result"></div>
+
+  <p class="hint">This is a static callback page for a personal automation tool. It only reads the
+  authorization code from the URL so the operator can complete the OAuth token exchange locally.
+  No data is sent anywhere from this page.</p>
+
+<script>
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  var code = params.get('code');
+  var state = params.get('state');
+  var error = params.get('error');
+  var errorDesc = params.get('error_description');
+  var statusEl = document.getElementById('status');
+  var resultEl = document.getElementById('result');
+
+  function box(label, value) {
+    var d = document.createElement('div');
+    d.className = 'box';
+    var l = document.createElement('span');
+    l.className = 'label';
+    l.textContent = label;
+    d.appendChild(l);
+    var span = document.createElement('span');
+    span.textContent = value;
+    d.appendChild(span);
+    var br = document.createElement('div');
+    var btn = document.createElement('button');
+    btn.textContent = 'Copy';
+    btn.onclick = function () {
+      navigator.clipboard.writeText(value).then(function () { btn.textContent = 'Copied!'; });
+    };
+    br.style.marginTop = '8px';
+    br.appendChild(btn);
+    d.appendChild(br);
+    return d;
+  }
+
+  if (error) {
+    statusEl.className = 'err';
+    statusEl.textContent = 'Authorization error: ' + error;
+    if (errorDesc) resultEl.appendChild(box('error_description', errorDesc));
+  } else if (code) {
+    statusEl.className = 'ok';
+    statusEl.textContent = 'Authorization successful. Copy the authorization code below.';
+    resultEl.appendChild(box('authorization code', code));
+    if (state) resultEl.appendChild(box('state', state));
+  } else {
+    statusEl.textContent = 'No authorization code found in the URL.';
+  }
+})();
+</script>
+</body>
+</html>
